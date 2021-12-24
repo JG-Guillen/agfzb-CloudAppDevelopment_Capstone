@@ -11,8 +11,7 @@ from django.utils.timezone import now
 # - __str__ method to print a car make object
 class CarMake(models.Model):
     name = models.CharField(null=False, max_length=30)
-    description = models.CharField(null=False, max_length=100, default='doe')
-    dob = models.DateField(null=True)
+    description = models.CharField(null=False, max_length=100)
     
     # Create a toString method for object string representation
     def __str__(self):
