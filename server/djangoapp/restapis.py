@@ -10,7 +10,26 @@ import http.client
 #                                     auth=HTTPBasicAuth('apikey', api_key))
 
 def get_request(url,**kwargs):
-    if 'dealer_Id' in kwargs:
+    if 'api_key' in kwargs:
+        try:
+            """
+            params = {
+                'text': kwargs['text'],
+                'version': '2021-08-01',
+                'features': 'sentiment',
+                'return_analyzed_text': True
+            }
+            """
+            api_key = kwargs['api_key']
+            params=kwargs['params']
+            response = requests.get(url, headers={'Content-Type':'application/json'}, params=params, auth=HTTPBasicAuth('apikey', api_key))                                
+        except:
+            # If any error occurs
+            print("Network exception occurred")
+        status_code = response.status_code
+        print("With status {} ".format(status_code))
+        json_data = json.loads(response.text)
+    elif 'dealer_Id' in kwargs:
         conn = http.client.HTTPSConnection("a6e41465.us-south.apigw.appdomain.cloud")
         payload = "{\"dealership\":"+str(kwargs["dealer_Id"])+"}"
         headers = {
@@ -87,9 +106,17 @@ def get_dealer_reviews_from_cf(url, dealer_Id,**kwargs):
 
 
 # Create an `analyze_review_sentiments` method to call Watson NLU and analyze text
-# def analyze_review_sentiments(text):
+def analyze_review_sentiments(text):
 # - Call get_request() with specified arguments
 # - Get the returned sentiment label such as Positive or Negative
-
-
+    params = dict()
+    params["text"] = kwargs["text"]
+    params["version"] = '2021-08-01'
+    params["features"] = 'sentiment'
+    params["return_analyzed_text"] = True
+    url = "https://api.us-south.natural-language-understanding.watson.cloud.ibm.com/instances/c8398e37-e7c5-4aec-bbfa-dc90f26df3f9"
+    api_key= "r6K_qf6xZPbxcDgRr3OaIvVBjdJ8MMpE0GosmmGzIHhH"
+    result = get_request(url,api_key=api_key, params)
+    print(result)
+    return result['sentiment']['document']['label']
 
