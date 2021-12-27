@@ -3,7 +3,9 @@ import json
 from .models import CarDealer, DealerReview
 from requests.auth import HTTPBasicAuth
 import http.client
-
+from ibm_cloud_sdk_core.authenticators import IAMAuthenticator
+from ibm_watson import NaturalLanguageUnderstandingV1
+from ibm_watson.natural_language_understanding_v1 import Features,SentimentOptions
 
 # Create a `get_request` to make HTTP GET requests
 # e.g., response = requests.get(url, params=params, headers={'Content-Type': 'application/json'},
@@ -45,11 +47,8 @@ def get_request(url,**kwargs):
         return json_data
     else:
         conn = http.client.HTTPSConnection("a6e41465.us-south.apigw.appdomain.cloud")
-        print("hola2")
         headers = { 'accept': "application/json" }
-
         conn.request("GET", url, headers=headers)
-
         res = conn.getresponse()
         data = res.read()
         json_data = json.loads(data)
@@ -93,14 +92,14 @@ def get_dealer_reviews_from_cf(url, dealer_Id,**kwargs):
     results = []
     json_result = get_request(url,dealer_Id=dealer_Id)
     if json_result:
-        print(json_result)
+        #print(json_result)
         for review_doc in json_result['Docs']:
-            
+            print(review_doc["review"])
             review_obj = DealerReview(id=review_doc["id"], name=review_doc["name"], dealership=review_doc["dealership"],
                                     review=review_doc["review"], purchase=review_doc["purchase"],
                                    purchase_date=review_doc["purchase_date"],
                                    car_make=review_doc["car_make"], car_model=review_doc["car_model"],car_year=review_doc["car_year"],
-                                   sentiment="")
+                                   sentiment=analyze_review_sentiments(review_doc["review"]))
             results.append(review_obj)
     return results
 
@@ -109,14 +108,12 @@ def get_dealer_reviews_from_cf(url, dealer_Id,**kwargs):
 def analyze_review_sentiments(text):
 # - Call get_request() with specified arguments
 # - Get the returned sentiment label such as Positive or Negative
-    params = dict()
-    params["text"] = kwargs["text"]
-    params["version"] = '2021-08-01'
-    params["features"] = 'sentiment'
-    params["return_analyzed_text"] = True
     url = "https://api.us-south.natural-language-understanding.watson.cloud.ibm.com/instances/c8398e37-e7c5-4aec-bbfa-dc90f26df3f9"
     api_key= "r6K_qf6xZPbxcDgRr3OaIvVBjdJ8MMpE0GosmmGzIHhH"
-    result = get_request(url,api_key=api_key, params)
-    print(result)
-    return result['sentiment']['document']['label']
+    authenticator = IAMAuthenticator(api_key)
+    natural_language_understanding = NaturalLanguageUnderstandingV1(version='2021-08-01',authenticator=authenticator)
+    natural_language_understanding.set_service_url(url)
+    response = natural_language_understanding.analyze( text=text,language="en",features=Features(sentiment=SentimentOptions(targets=[text]))).get_result()
+    label=json.dumps(response, indent=2)
+    return(response["sentiment"]["document"]["label"])
 
