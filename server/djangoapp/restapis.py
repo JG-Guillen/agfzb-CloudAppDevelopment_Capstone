@@ -56,22 +56,26 @@ def get_request(url,**kwargs):
 
 # Create a `post_request` to make HTTP POST requests
 # e.g., response = requests.post(url, params=kwargs, json=payload)
+def post_request(url, json_payload, **kwargs):
+    conn = http.client.HTTPSConnection("a6e41465.us-south.apigw.appdomain.cloud")
+    headers = {
+        'content-type': "application/json",
+        'accept': "application/json"
+        }
+    payload=json_payload
+    conn.request("POST", "/api/review/api/review", payload, headers)
+    res = conn.getresponse()
+    data = res.read()
+    print(data.decode("utf-8"))
 
 
 # Create a get_dealers_from_cf method to get dealers from a cloud function
-# def get_dealers_from_cf(url, **kwargs):
-# - Call get_request() with specified arguments
-# - Parse JSON results into a CarDealer object list
 def get_dealers_from_cf(url, **kwargs):
     results = []
-    #print("url getcf: " + url)
-    # Call get_request with a URL parameter
     json_result = get_request(url)
     if json_result:
         # Get the row list in JSON as dealers
         #dealers = json_result["rows"]
-        # For each dealer object
-        #print(json_result)
         for dealer_doc in json_result['Docs']:
             # Get its content in `doc` object
             #dealer_doc = dealer["doc"]
@@ -88,6 +92,7 @@ def get_dealers_from_cf(url, **kwargs):
 # def get_dealer_by_id_from_cf(url, dealerId):
 # - Call get_request() with specified arguments
 # - Parse JSON results into a DealerView object list
+
 def get_dealer_reviews_from_cf(url, dealer_Id,**kwargs):
     results = []
     json_result = get_request(url,dealer_Id=dealer_Id)
@@ -106,8 +111,6 @@ def get_dealer_reviews_from_cf(url, dealer_Id,**kwargs):
 
 # Create an `analyze_review_sentiments` method to call Watson NLU and analyze text
 def analyze_review_sentiments(text):
-# - Call get_request() with specified arguments
-# - Get the returned sentiment label such as Positive or Negative
     url = "https://api.us-south.natural-language-understanding.watson.cloud.ibm.com/instances/c8398e37-e7c5-4aec-bbfa-dc90f26df3f9"
     api_key= "r6K_qf6xZPbxcDgRr3OaIvVBjdJ8MMpE0GosmmGzIHhH"
     authenticator = IAMAuthenticator(api_key)
