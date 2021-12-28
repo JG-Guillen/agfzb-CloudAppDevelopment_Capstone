@@ -14,14 +14,6 @@ from ibm_watson.natural_language_understanding_v1 import Features,SentimentOptio
 def get_request(url,**kwargs):
     if 'api_key' in kwargs:
         try:
-            """
-            params = {
-                'text': kwargs['text'],
-                'version': '2021-08-01',
-                'features': 'sentiment',
-                'return_analyzed_text': True
-            }
-            """
             api_key = kwargs['api_key']
             params=kwargs['params']
             response = requests.get(url, headers={'Content-Type':'application/json'}, params=params, auth=HTTPBasicAuth('apikey', api_key))                                
@@ -34,6 +26,20 @@ def get_request(url,**kwargs):
     elif 'dealer_Id' in kwargs:
         conn = http.client.HTTPSConnection("a6e41465.us-south.apigw.appdomain.cloud")
         payload = "{\"dealership\":"+str(kwargs["dealer_Id"])+"}"
+        headers = {
+            'content-type': "application/json",
+            'accept': "application/json"
+            }
+
+        conn.request("GET", url, payload, headers)
+
+        res = conn.getresponse()
+        data = res.read()
+        json_data = json.loads(data)
+        return json_data
+    elif 'state' in kwargs:
+        conn = http.client.HTTPSConnection("a6e41465.us-south.apigw.appdomain.cloud")
+        payload = "{\"state\":"+str(kwargs["state"])+"}"
         headers = {
             'content-type': "application/json",
             'accept': "application/json"
@@ -88,10 +94,24 @@ def get_dealers_from_cf(url, **kwargs):
 
     return results
 
+def get_dealers_by_state(url,state, **kwargs):
+    results = []
+    json_result = get_request(url, state=state)
+    if json_result:
+        # Get the row list in JSON as dealers
+        #dealers = json_result["rows"]
+        for dealer_doc in json_result['Docs']:
+            # Get its content in `doc` object
+            #dealer_doc = dealer["doc"]
+            # Create a CarDealer object with values in `doc` object
+            dealer_obj = CarDealer(address=dealer_doc["address"], city=dealer_doc["city"], full_name=dealer_doc["full_name"],
+                                   id=dealer_doc["id"], lat=dealer_doc["lat"], long=dealer_doc["long"],
+                                   short_name=dealer_doc["short_name"],
+                                   st=dealer_doc["st"], zip=dealer_doc["zip"])
+            results.append(dealer_obj)
+
+    return results
 # Create a get_dealer_reviews_from_cf method to get reviews by dealer id from a cloud function
-# def get_dealer_by_id_from_cf(url, dealerId):
-# - Call get_request() with specified arguments
-# - Parse JSON results into a DealerView object list
 
 def get_dealer_reviews_from_cf(url, dealer_Id,**kwargs):
     results = []

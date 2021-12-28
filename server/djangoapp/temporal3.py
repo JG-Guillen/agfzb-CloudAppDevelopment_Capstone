@@ -39,3 +39,20 @@ res = conn.getresponse()
 data = res.read()
 
 print(data.decode("utf-8"))
+
+
+{
+"review": 
+    {
+        "id": 1115,
+        "name": "Upkar Lidder",
+        "dealership": 15,
+        "review": "Great service!",
+        "purchase": false,
+        "another": "field",
+        "purchase_date": "02/16/2021",
+        "car_make": "Audi",
+        "car_model": "Car",
+        "car_year": 2021
+    }
+}
