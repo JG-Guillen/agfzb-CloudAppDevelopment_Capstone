@@ -50,8 +50,8 @@ class CarModel(models.Model):
     # Create a toString method for object string representation
     def __str__(self):
             return "Name " + self.name + ", " + \
-            "Dealer ID: " + self.dealerid + ", " + \
-            "Type: " + self.type + ", " + \
+            "Dealer ID: " + str(self.dealerid) + ", " + \
+            "Type: " + self.Type + ", " + \
             "Year: " + str(self.year)
 
 

@@ -72,7 +72,7 @@ def post_request(url, json_payload, **kwargs):
     conn.request("POST", "/api/review/api/review", payload, headers)
     res = conn.getresponse()
     data = res.read()
-    print(data.decode("utf-8"))
+    #print(data.decode("utf-8"))
 
 
 # Create a get_dealers_from_cf method to get dealers from a cloud function
@@ -119,7 +119,7 @@ def get_dealer_reviews_from_cf(url, dealer_Id,**kwargs):
     if json_result:
         #print(json_result)
         for review_doc in json_result['Docs']:
-            print(review_doc["review"])
+            #print(review_doc["review"])
             review_obj = DealerReview(id=review_doc["id"], name=review_doc["name"], dealership=review_doc["dealership"],
                                     review=review_doc["review"], purchase=review_doc["purchase"],
                                    purchase_date=review_doc["purchase_date"],

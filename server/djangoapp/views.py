@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponseRedirect, HttpResponse
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404, render, redirect
-from .models import CarDealer
+from .models import CarDealer,CarModel
 from .restapis import get_dealers_from_cf, get_dealer_reviews_from_cf, post_request, get_dealers_by_state
 from django.contrib.auth import login, logout, authenticate
 from django.contrib import messages
@@ -124,13 +124,35 @@ def add_review(request, dealer_id):
     context={}
     context["dealer_id"]=dealer_id
     if request.method == "GET":
-        return render(request, 'djangoapp/add_review.html', context)
-    if request.method == "POST":
+        context['cars'] = CarModel.objects.filter(dealerid=dealer_id)
+        return render(request, 'djangoapp/add_review.html', context)      
+    elif request.method == 'POST':
         url = "/api/review/api/review"
-        review={}
-        review["dealership"] = dealer_id
-        review["review"] = "This is a great car dealer"
+        reviews = get_dealer_reviews_from_cf(url,dealer_id)
+        top_id = max([review.id for review in reviews])
+        new_id= top_id + 1
+        new_review={}
+        car = CarModel.objects.get(id=request.POST["car"])
+        #print("car: ",car)
+        new_review["id"] = new_id
+        new_review["dealership"] = dealer_id
+        new_review["car_year"] = str(car.year)
+        new_review["car_make"] = car.carmake.name
+        new_review["car_model"] = car.name
+        new_review["review"] = request.POST["content"]
+        if 'purchasecheck' in request.POST :
+            new_review["purchase"] = True
+            new_review["purchase_date"] = request.POST["purchasedate"]
+        else:
+            new_review["purchase"] = False
+            new_review["purchase_date"] = ""
+        new_review["name"] = request.user.get_full_name()
         json_payload={}
-        json_payload["review"]=review
-        print(json.dumps(json_payload))
+        json_payload["review"]=new_review
+        print("payload: ",json.dumps(json_payload))
         post_request(url, json.dumps(json_payload))
+        context={}
+        url = "/api/dealership/api/dealership"
+        dealerships = get_dealers_from_cf(url)
+        context["dealership_list"]=dealerships
+        return render(request, 'djangoapp/index.html', context)
