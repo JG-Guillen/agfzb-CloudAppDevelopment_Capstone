@@ -80,17 +80,20 @@ def registration_request(request):
 
 # Update the `get_dealerships` view to render the index page with a list of dealerships
 def get_dealerships(request):
+    context={}
     if request.method == "GET":
         url = "/api/dealership/api/dealership"
         # Get dealers from the URL
         #print("url views: " +url)
         dealerships = get_dealers_from_cf(url)
         # Concat all dealer's short name
+        context["dealership_list"]=dealerships
         dealer_names = ' '.join([dealer.short_name for dealer in dealerships])
         # Return a list of dealer short name
-        return HttpResponse(dealer_names)
+        return render(request, 'djangoapp/index.html', context)
 
 def get_dealerships_by_state(request,state):
+    context={}
     if request.method == "GET":
         url = "/api/dealership/api/dealership"
         # Get dealers from the URL
@@ -102,24 +105,32 @@ def get_dealerships_by_state(request,state):
         return HttpResponse(dealer_names)
 # Create a `get_dealer_details` view to render the reviews of a dealer
 def get_dealer_details(request, dealer_id):
+    context={}
     if request.method == "GET":
         url = "/api/review/api/review"
         reviews = get_dealer_reviews_from_cf(url,dealer_id)
         # Concat all dealer's short name
         dealers_reviews = ' '.join([review.review for review in reviews])
+        context["reviews_list"]=reviews
+        context["dealer_id"]=dealer_id
         dealers_reviews_NLU=""
         for review in reviews:
             dealers_reviews_NLU= dealers_reviews_NLU + "<p>Review: " + review.review+ " Sentiment: "+ review.sentiment+ "</p>"
         # Return a list of dealer short name
-        return HttpResponse(dealers_reviews_NLU)
+        return render(request, 'djangoapp/dealer_details.html', context)
 
 # Create a `add_review` view to submit a review
 def add_review(request, dealer_id):
-    url = "/api/review/api/review"
-    review={}
-    review["dealership"] = dealer_id
-    review["review"] = "This is a great car dealer"
-    json_payload={}
-    json_payload["review"]=review
-    print(json.dumps(json_payload))
-    post_request(url, json.dumps(json_payload))
+    context={}
+    context["dealer_id"]=dealer_id
+    if request.method == "GET":
+        return render(request, 'djangoapp/add_review.html', context)
+    if request.method == "POST":
+        url = "/api/review/api/review"
+        review={}
+        review["dealership"] = dealer_id
+        review["review"] = "This is a great car dealer"
+        json_payload={}
+        json_payload["review"]=review
+        print(json.dumps(json_payload))
+        post_request(url, json.dumps(json_payload))
