@@ -24,19 +24,27 @@ def get_request(url,**kwargs):
         print("With status {} ".format(status_code))
         json_data = json.loads(response.text)
     elif 'dealer_Id' in kwargs:
-        conn = http.client.HTTPSConnection("a6e41465.us-south.apigw.appdomain.cloud")
-        payload = "{\"dealership\":"+str(kwargs["dealer_Id"])+"}"
-        headers = {
-            'content-type': "application/json",
-            'accept': "application/json"
-            }
+        if kwargs["dealer_Id"]==0:
+            conn = http.client.HTTPSConnection("a6e41465.us-south.apigw.appdomain.cloud")
+            headers = { 'accept': "application/json" }
+            conn.request("GET", url, headers=headers)
+            res = conn.getresponse()
+            data = res.read()
+            json_data = json.loads(data)            
+        else:
+            conn = http.client.HTTPSConnection("a6e41465.us-south.apigw.appdomain.cloud")
+            payload = "{\"dealership\":"+str(kwargs["dealer_Id"])+"}"
+            headers = {
+                'content-type': "application/json",
+                'accept': "application/json"
+                }
 
-        conn.request("GET", url, payload, headers)
+            conn.request("GET", url, payload, headers)
 
-        res = conn.getresponse()
-        data = res.read()
-        json_data = json.loads(data)
-        return json_data
+            res = conn.getresponse()
+            data = res.read()
+            json_data = json.loads(data)
+            return json_data
     elif 'state' in kwargs:
         conn = http.client.HTTPSConnection("a6e41465.us-south.apigw.appdomain.cloud")
         payload = "{\"state\":"+str(kwargs["state"])+"}"

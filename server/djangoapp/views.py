@@ -128,7 +128,7 @@ def add_review(request, dealer_id):
         return render(request, 'djangoapp/add_review.html', context)      
     elif request.method == 'POST':
         url = "/api/review/api/review"
-        reviews = get_dealer_reviews_from_cf(url,dealer_id)
+        reviews = get_dealer_reviews_from_cf(url,0)
         top_id = max([review.id for review in reviews])
         new_id= top_id + 1
         new_review={}
